@@ -1,0 +1,426 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<title>どんどんビルドちゃん</title>
+<HTA:APPLICATION
+	APPLICATIONNAME	= "SuperBuilder"
+	BORDER		= "dialog"
+	BORDERSTYLE	= "normal"
+	CAPTION		= "yes"
+	CONTEXTMENU	= "no"
+	ID		= "oCheck"
+	ICON		= "builder\Fcc01.ico"
+	INNERBORDER	= "no"
+	MAXIMIZEBUTTON	= "no"
+	MINIMIZEBUTTON	= "yes"
+	NAVIGABLE	= "yes"
+	SCROLL		= "no"
+	SCROLLFLAT	= "yes"
+	SELECTION	= "no"
+	SHOWINTASKBAR	= "yes"
+	SINGLEINSTANCE	= "no"
+	SYSMENU		= "yes"
+	VERSION		= "1.0.0"
+	WINDOWSTATE	= "normal"
+/>
+
+
+<style type="text/css">
+<!--
+/* 
+C0FFEE	9CBFB5	3EA689	D0FFF2	DCFFF5
+*/
+
+body{
+	font-family: Arial;
+}
+
+table {
+
+	border-top:1px solid #663300;
+	border-left:1px solid #663300;
+	border-collapse:collapse;
+	width: 100%;
+}
+
+th {
+	border-right:1px solid #663300;
+	border-bottom:1px solid #663300;
+	background-color: #3EA689;
+	color: white;
+}
+
+td {
+	border-right:1px solid #663300;
+	border-bottom:1px solid #663300;
+	text-align: center;
+	padding: 10px;
+}
+
+form {
+	margin-top: 10px;
+
+}
+
+form span.checkAll {
+	display: block;
+	width: 100%;
+	text-align: right;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+form span.selectFolder {
+	display: block;
+	width: 100%;
+	text-align: center;
+	margin-bottom: 10px;
+}
+
+-->
+</style>
+
+<script language="VBScript">
+<!--
+'Option Explicit
+
+Const cTitle = "どんどんビルドちゃん"
+
+' 退避フォルダ用に準備
+Dim strCurrentDate
+
+Sub Window_onLoad
+
+	window.resizeTo 300,650
+	Call EEgs
+
+End Sub
+
+Sub showFolderDialog
+
+	Dim objShell
+	Dim objFolder
+
+	Set objShell = CreateObject("Shell.Application")
+	Set objFolder = objShell.BrowseForFolder(0, "build.bat があるプロジェクトフォルダを選択して下さい(テキストボックスにコピペ可)", &H10, "")
+
+	If objFolder is Nothing Then
+		document.mainForm.folderName.value = ""
+	Else
+		document.mainForm.folderName.value = objFolder.Items.Item.Path
+	End If
+
+	Set objShell = Nothing
+	Set objFolder = Nothing
+
+End Sub
+
+Sub checkAll
+
+	document.mainForm.v450.checked = True
+	document.mainForm.v460.checked = True
+	document.mainForm.v461.checked = True
+	document.mainForm.v462.checked = True
+	document.mainForm.v470.checked = True
+	document.mainForm.v471.checked = True
+	document.mainForm.v472.checked = True
+	document.mainForm.v473.checked = True
+	document.mainForm.v500.checked = True
+	document.mainForm.v501.checked = True
+	document.mainForm.v510.checked = True
+
+End Sub
+
+Sub checkNewest
+
+	document.mainForm.v450.checked = False
+	document.mainForm.v460.checked = False
+	document.mainForm.v461.checked = False
+	document.mainForm.v462.checked = False
+	document.mainForm.v470.checked = False
+	document.mainForm.v471.checked = False
+	document.mainForm.v472.checked = False
+	document.mainForm.v473.checked = False
+	document.mainForm.v500.checked = False
+	document.mainForm.v501.checked = False
+	document.mainForm.v510.checked = True
+
+End Sub
+
+
+Sub resetAll
+
+	' チェックボックスを外す
+	document.mainForm.v450.checked = False
+	document.mainForm.v460.checked = False
+	document.mainForm.v461.checked = False
+	document.mainForm.v462.checked = False
+	document.mainForm.v470.checked = False
+	document.mainForm.v471.checked = False
+	document.mainForm.v472.checked = False
+	document.mainForm.v473.checked = False
+	document.mainForm.v500.checked = False
+	document.mainForm.v501.checked = False
+	document.mainForm.v510.checked = False
+
+	' チェックボックスを有効化
+	document.mainForm.v450.disabled = False
+	document.mainForm.v460.disabled = False
+	document.mainForm.v461.disabled = False
+	document.mainForm.v462.disabled = False
+	document.mainForm.v470.disabled = False
+	document.mainForm.v471.disabled = False
+	document.mainForm.v472.disabled = False
+	document.mainForm.v473.disabled = False
+	document.mainForm.v500.disabled = False
+	document.mainForm.v501.disabled = False
+	document.mainForm.v510.disabled = False
+	
+	' 入力済みフォルダを消す
+	document.mainForm.folderName.value = ""
+
+End Sub
+
+
+Sub startBuild
+
+	If Len(document.mainForm.folderName.value) = 0 Then
+		Msgbox "プロジェクトフォルダが選択されていません!!", vbCritical, cTitle
+		Exit Sub
+	End If
+
+	Dim flgv450
+	Dim flgv460
+	Dim flgv461
+	Dim flgv462
+	Dim flgv470
+	Dim flgv471
+	Dim flgv472
+	Dim flgv473
+	Dim flgv500
+	Dim flgv501
+	Dim flgv510
+
+	' チェックボックスの状態を取得
+	flgv450 = document.mainForm.v450.checked
+	flgv460 = document.mainForm.v460.checked
+	flgv461 = document.mainForm.v461.checked
+	flgv462 = document.mainForm.v462.checked
+	flgv470 = document.mainForm.v470.checked
+	flgv471 = document.mainForm.v471.checked
+	flgv472 = document.mainForm.v472.checked
+	flgv473 = document.mainForm.v473.checked
+	flgv500 = document.mainForm.v500.checked
+	flgv501 = document.mainForm.v501.checked
+	flgv510 = document.mainForm.v510.checked
+
+	' ボタンを無効化
+	document.mainForm.v450.disabled = True
+	document.mainForm.v460.disabled = True
+	document.mainForm.v461.disabled = True
+	document.mainForm.v462.disabled = True
+	document.mainForm.v470.disabled = True
+	document.mainForm.v471.disabled = True
+	document.mainForm.v472.disabled = True
+	document.mainForm.v473.disabled = True
+	document.mainForm.v500.disabled = True
+	document.mainForm.v501.disabled = True
+	document.mainForm.v510.disabled = True
+	document.mainForm.btnShowFolderDialog.disabled = True
+	document.mainForm.btnStartBuild.disabled = True
+
+	' ボタンを押したときの時間を使う
+	strCurrentDate = Replace(Now, "/", "")
+	strCurrentDate = Replace(strCurrentDate, ":", "")
+	strCurrentDate = Replace(strCurrentDate, " ", "")
+
+	' チェックボックスに応じて呼び出し
+	If flgv450 = True Then
+		Call runBuild("4.5.0")
+	End If
+
+	If flgv460 = True Then
+		Call runBuild("4.6.0")
+	End If
+
+	If flgv461 = True Then
+		Call runBuild("4.6.1")
+	End If
+
+	If flgv462 = True Then
+		Call runBuild("4.6.2")
+	End If
+
+	If flgv470 = True Then
+		Call runBuild("4.7.0")
+	End If
+
+	If flgv471 = True Then
+		Call runBuild("4.7.1")
+	End If
+
+	If flgv472 = True Then
+		Call runBuild("4.7.2")
+	End If
+
+	If flgv473 = True Then
+		Call runBuild("4.7.3")
+	End If
+
+	If flgv500 = True Then
+		Call runBuild("5.0.0")
+	End If
+
+	If flgv501 = True Then
+		Call runBuild("5.0.1")
+	End If
+
+	If flgv510 = True Then
+		Call runBuild("5.1.0")
+	End If
+
+	Msgbox "ビルドが終わりました", vbInformation + vbSystemmodal, cTitle
+
+	document.mainForm.btnShowFolderDialog.disabled = False
+	document.mainForm.btnStartBuild.disabled = False
+
+End Sub
+
+Sub runBuild(version)
+
+	Dim objShell
+	Dim objFS
+
+	Dim strThinstallBinDir
+	Dim strTargetBuildBat
+	Dim strTargetBinDir
+	Dim strTargetStatus
+	Dim strArchiveDir
+
+	Set objShell = CreateObject("Wscript.Shell") 
+	Set objFS = CreateObject("Scripting.FileSystemObject")
+
+	' 1 各バージョンが加工のされているフォルダ
+	' 2 build.batが格納されているフォルダ
+	' 3 build されたファイルが保存されるフォルダ
+	' 4 build されたファイルを退避するフォルダ
+	strThinstallBinDir = "C:\ThinApp\builder\" & version
+	strTargetBuildBat = document.mainForm.folderName.value & "\build.bat"
+	strTargetBinDir = document.mainForm.folderName.value & "\bin"
+	strArchiveDir = "C:\ThinApp\" & strCurrentDate & "\"
+
+
+
+	' 書き換えるhtmlを特定
+	strTargetStatus = Replace(version, ".", "")
+	strTargetStatus = "lblv" & strTargetStatus
+
+	' 処理中に書き換え
+	document.getElementById(strTargetStatus).innerHTML = "処理中"
+
+	' cmd に対して環境変数のセットとbuild.batの呼び出しとディレクトリ作成
+
+	objShell.Run "cmd /c " & chr(34) & "set THINSTALL_BIN=" & strThinstallBinDir & _
+		"&& " & chr(34) & strTargetBuildBat & chr(34) & _ 
+		" && mkdir " & strArchiveDir & version & chr(34) , 1, True
+
+	' フォルダをコピー
+	objFS.GetFolder(strTargetBinDir).Copy strArchiveDir & version
+
+	' 終了に書き換え
+	document.getElementById(strTargetStatus).innerHTML = "終了"
+
+	Set Shell = Nothing
+	Set objFolder = Nothing
+
+End Sub
+
+Sub EEgs
+
+	Randomize
+
+	' 確率20%?
+	If Rnd mod 4 = 0 Then
+		Msgbox "賞味期限が切れています!!", vbOKOnly + vbCritical + vbSystemmodal, cTitle
+		window.close
+	End If
+
+End Sub
+
+
+-->
+</script> 
+
+</head>
+
+<body bgcolor="#C0FFEE">
+
+<form name="mainForm">
+<table>
+	 <tr>
+		<th>状況</th>
+		<th>バージョン</th>
+	</tr>
+	<tr>
+		<td><span id="lblv450">--</span></td>
+		<td><label><input type="checkbox" id="v450" name="v450">4.5.0</label></td>
+	</tr>
+	<tr>
+		<td><span id="lblv460">--</span></td>
+		<td><label><input type="checkbox" id="v460" name="v460">4.6.0</label></td>
+	</tr>
+	<tr>
+		<td><span id="lblv461">--</span></td>
+		<td><label><input type="checkbox" id="v461" name="v461">4.6.1</label></td>
+	</tr>
+	<tr>
+		<td><span id="lblv462">--</span></td>
+		<td><label><input type="checkbox" id="v462" name="v462">4.6.2</label></td>
+	</tr>
+	<tr>
+		<td><span id="lblv470">--</span></td>
+		<td><label><input type="checkbox" id="v470" name="v470">4.7.0</label></td>
+	</tr>
+	<tr>
+		<td><span id="lblv471">--</span></td>
+		<td><label><input type="checkbox" id="v471" name="v471">4.7.1</label></td>
+	</tr>
+	<tr>
+		<td><span id="lblv472">--</span></td>
+		<td><label><input type="checkbox" id="v472" name="v472">4.7.2</label></td>
+	</tr>
+	<tr>
+		<td><span id="lblv473">--</span></td>
+		<td><label><input type="checkbox" id="v473" name="v473">4.7.3</label></td>
+	</tr>
+	<tr>
+		<td><span id="lblv500">--</span></td>
+		<td><label><input type="checkbox" id="v500" name="v500">5.0.0</label></td>
+	</tr>
+	<tr>
+		<td><span id="lblv501">--</span></td>
+		<td><label><input type="checkbox" id="v501" name="v501">5.0.1</label></td>
+	</tr>
+	<tr>
+		<td><span id="lblv510">--</span></td>
+		<td><label><input type="checkbox" id="v510" name="v510">5.1.0</label></td>
+	</tr>
+</table>
+
+<span class="checkAll">
+<input type="button" id="allCheckButton" value="全部" onClick="checkAll">
+<input type="button" id="newestCheckButton" value="最新" onClick="checkNewest">
+<input type="button" id="allResetButton" value="リセット" onClick="resetAll">
+</span>
+
+<span class="selectFolder">
+<input type="text" size="25" name="folderName">
+<input type="button" value="フォルダ選択" id="btnShowFolderDialog" onClick="showFolderDialog">
+</span>
+
+<input type="button" value="ビルド開始" style="width: 100%; height: 30px" id="btnStartBuild" onClick="startBuild">
+
+</form>
+</body>
+</html>
+
